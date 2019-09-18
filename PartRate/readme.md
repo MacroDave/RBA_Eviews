@@ -1,0 +1,1 @@
+Estimates the trend and cyclical components of the labour force participation rate following the methodology of Evans, Moore and Rees (2018) from the RBA Bulletin: https://www.rba.gov.au/publications/bulletin/2018/sep/the-cyclical-behaviour-of-labour-force-participation.html
