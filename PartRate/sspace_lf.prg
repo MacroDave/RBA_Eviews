@@ -32,10 +32,17 @@ series cycle_ini = lrgdppc - lrgdppc_ini
 
 vector(5) mprior = 0
 mprior(1) = lrgdppc_ini(@ifirst(lrgdppc_ini)+1)
-mprior(2) = unr_ini(@ifirst(unr_ini)+1)
+mprior(2) = 5
 mprior(3) = prt_ini(@ifirst(prt_ini)+1)
-mprior(4) = cycle_ini(@ifirst(cycle_ini)+1)
-mprior(5) = cycle_ini(@ifirst(cycle_ini))
+mprior(4) = 0
+mprior(5) = 0
+
+sym(5) vprior = 0
+vprior(1,1) = 1.27
+vprior(2,2) = 0.28
+vprior(3,3) = 0.4
+vprior(4,4) = 0.16
+vprior(5,5) = 0.16
 
 ' Setup coefficient vectors
 coef(1) delta
@@ -112,6 +119,7 @@ ss_labour.append @state cyclelag = cycle(-1)
 ss_labour.append @evar cov(e1, e4) = sigma(1)*sigma(4)*rho(1)
 
 ss_labour.append @mprior mprior
+ss_labour.append @vprior vprior
 
 smpl ssest
 ss_labour.ml(optmethod=legacy)
@@ -127,7 +135,7 @@ ss_break.append @param kappa(1) !kappa1 kappa(2) !kappa2
 ss_break.append @param theta(1) !theta1 theta(2) !theta2
 ss_break.append @param phi(1) !phi1 phi(2) !phi2 
 ss_break.append @param sigma(1) !sigma1 sigma(2) !sigma2 sigma(3) !sigma3 sigma(4) !sigma4 
-ss_break.append @param rho(1) 0.8 rho(2) -0.4
+ss_break.append @param rho(1) 0.42 rho(2) 0.43
 
 ss_break.append @signal lrgdppc = ystar + cycle
 ss_break.append @signal unr = unrstar + kappa(1)*cycle + kappa(2)*cyclelag
@@ -142,15 +150,51 @@ ss_break.append @state cyclelag = cycle(-1)
 ss_break.append @evar cov(e1, e4) = (sigma(1)+sigma(10))*(sigma(4)+sigma(13))*(rho(1)+rho(2)*dum_mod)
 
 ss_break.append @mprior mprior
+ss_break.append @vprior vprior
 
 smpl ssest
 ss_break.ml(optmethod=legacy)
 ss_break.makestates(t=smooth) *_break
+ss_break.makestates(t=smoothse) *_break_se
 
-smpl @all
-series prt_cyclical_break = prt - prtstar
+'*************PLOT RESULTS*************************
+'Plotting Results
 
-smpl @all
-plot prt_cyclical prt_cyclical_break
+series prtcycle_break = theta(1)*cycle + theta(2)*cyclelag
 
+!bound1=@qnorm(0.975)
+
+smpl ssest
+series trendlow95 = (prtstar_break-!bound1*prtstar_break_se) 
+series trendhigh95 = (prtstar_break+!bound1*prtstar_break_se)
+
+series cyclow95 = theta(1)*(cycle-!bound1*cycle_break_se) + theta(2)*(cyclelag-!bound1*cycle_break_se)
+series cychigh95 = theta(1)*(cycle+!bound1*cycle_break_se) + theta(2)*(cyclelag+!bound1*cycle_break_se)
+
+smpl 1980q1 @last
+group g_pratet trendlow95 trendhigh95 prtstar_break
+freeze(p_PRATEt) g_PRATET.mixed band(1,2) line(3)
+p_PRATEt.setelem(1) fillcolor(@rgb(192, 192, 192))
+p_PRATEt.setelem(1) lcolor(black)
+p_PRATEt.name(1) 95 per cent confidence interval
+p_PRATEt.name(2) 
+p_PRATEt.name(3) Trend Participation Rate
+p_PRATEt.legend display position(0.5,.1)
+show p_PRATEt
+
+smpl 1980q1 @last
+group g_pratec cyclow95 cychigh95 prtcycle_break
+freeze(p_pratec) g_pratec.mixed band(1,2) line(3)
+p_pratec.setelem(1) fillcolor(@rgb(192, 192, 192))
+p_pratec.setelem(1) lcolor(black)
+p_pratec.name(1) 95 per cent confidence interval
+p_pratec.name(2) 
+p_pratec.name(3) Cyclical Participation Rate
+p_pratec.legend display position(0.5,-.2)
+show p_pratec
+
+graph p_merge.merge p_pratet p_pratec
+show p_merge
+
+p_merge.save(t=pdf) ParticipationRate_Chart.pdf
 
