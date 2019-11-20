@@ -197,7 +197,7 @@ sym(1) vprior = 0.4 'Using RBA Paper Value
 	ss_bond.append @vprior vprior
 	
 	smpl ssest
-	ss_bond.ml
+	ss_bond.ml(optmethod=legacy)
 	ss_bond.makestates(t=smooth) *_bondq
 	
 '-----------------------------------------------------------------------------
