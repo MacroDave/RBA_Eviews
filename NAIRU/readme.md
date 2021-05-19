@@ -1,1 +1,1 @@
-Calculates the NAIRU using the specification of Cusbert (2017) frmo the RBA Bulletin: https://www.rba.gov.au/publications/bulletin/2017/jun/pdf/bu-0617-2-estimating-the-nairu-and-the-unemployment-gap.pdf
+Calculates the NAIRU using the specification of Cusbert (2017) from the RBA Bulletin: https://www.rba.gov.au/publications/bulletin/2017/jun/pdf/bu-0617-2-estimating-the-nairu-and-the-unemployment-gap.pdf
