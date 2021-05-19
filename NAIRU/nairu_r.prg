@@ -10,12 +10,12 @@ close @wf
 %path = @runpath
 cd %path
 
-!import_data = 0 'Set to 1 if you want to load the rawdata from ABS/RBA/FRED. Set to zero if you want it to load the previously imported database
+!import_data = 1 'Set to 1 if you want to load the rawdata from ABS/RBA/FRED. Set to zero if you want it to load the previously imported database
 
 '-----------------------------------------------------------------------------
 if !import_data = 1 then
 
-	'Import Rawdata from ABS/RBA/FRED
+	'Import Rawdata from ABS/RBA
 
 	'Create Workfile to populate with ABS/RBA Data
 	wfcreate(wf=NAIRU, page=NAIRU) q 1959q3 2021q4
@@ -24,33 +24,11 @@ if !import_data = 1 then
 	%rpath = @replace(@runpath,"\","/")
 	%setwd = "setwd("+"""" + @left(%rpath,@len(%rpath)-1) + """)"
 
-	'Enter API Keys for Downloading Data from FRED
-	'Register at FRED websites for API keys
-	%FRED = "819674707cc9b3a42385749283aacc6e"
-
 	'Open R connection
 	xopen(r)
 
 	'Set wd so can access and store R dataframes
 	xrun {%setwd}
-
-	'Check for R packages
-	xpackage tidyverse
-	xpackage fredr
-
-	'Turn on active R 
-	xon
-
-	'Set FRED Key for Downloading Oil Price
-	fredr_set_key(%FRED)
-
-	MCOILWTICO <- fredr(series_id = "MCOILWTICO", observation_start = as.Date("1959-07-01"), frequency = "q")
-	MCOILWTICO <- MCOILWTICO %>% rename(MCOILWTICO = value) %>% dplyr::select(date, MCOILWTICO)
-
-	xoff
-
-	xget(type=series) MCOILWTICO
-	rename MCOILWTICO WTI
 
 	'Download RBA and ABS Data
 	xpackage readabs
@@ -197,10 +175,7 @@ if !import_data = 1 then
 		
 		'Year-ended Growth in Consumer Import Prices
 		series dl4pmcg = (log(pmcg)-log(pmcg(-4)))*100
-
-		'Qtly Growth in WTI Oil Price (use WTI because longer publicly available series)
-		series dlwti = dlog(wti)*100
-		
+	
 		'Dummy Variable for 1997
 		series dum_mod = 0
 		smpl @first 1976q4 
